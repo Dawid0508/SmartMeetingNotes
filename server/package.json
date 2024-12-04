@@ -1,0 +1,15 @@
+{
+    "name": "smart-meeting-notes",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "dependencies": {
+        "@google-cloud/speech": "^6.7.0",
+        "dotenv": "^16.4.7",
+        "express": "^4.21.1",
+        "multer": "^1.4.5-lts.1",
+        "nodemailer": "^6.9.16"
+    }
+}
