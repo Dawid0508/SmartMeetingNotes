@@ -1,4 +1,6 @@
 //logika interfejsu użytkownika
+const recordTab = document.querySelector("#tab");
+const recordScreen = document.querySelector("#screen");
 
 document.getElementById("start-recording").addEventListener("click", ()=> {
     chrome.runtime.sendMessage({command: "start-recording"});

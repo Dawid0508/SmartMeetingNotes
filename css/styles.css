@@ -19,3 +19,6 @@ button {
     margin-top: 20px;
     font-weight: bold;
 }
+#start-recording, #stop-recording {
+    margin: 10px;
+}
