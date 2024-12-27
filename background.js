@@ -15,6 +15,7 @@ chrome.runtime.onMessage.addListener((message) => {
                 const blob = new Blob(recordedChunks, {type: 'audio/webm'});
                 const fileReader = new FileReader();
                 fileReader.onload = () => sendToServer(fileReader.result);
+                fileReader.readAsArrayBuffer(blob); // Odczyt danych z pliku
             };
 
         });
@@ -33,6 +34,7 @@ chrome.runtime.onMessage.addListener((message) => {
  * binary/octet-stream, as indicated by the `"Content-Type": "application/octet-stream"` header in
  */
 function sendToServer(audioData) {
+    console.log("Wysyłanie danych na serwer...");
     fetch("http://localhost:3000/convert", {
         method: "POST",
         headers: {"Content-Type": "application/octet-stream"},

@@ -5,31 +5,77 @@ const express = require('express');
 const multer = require('multer');
 const speech = require('@google-cloud/speech');
 const nodemailer = require('nodemailer');
+const fs = require('fs').promises;
+const path = require('path');
 
 const app = express();
 const upload = multer({storage: multer.memoryStorage() });
 
 app.post('/convert', upload.single('file'), async(req, res) => {
-    const client = new speech.SpeechClient();
-    const audioBytes = req.file.buffer.toString('base64');
+    try{
 
-    const request = {
-        audio: {content: audioBytes},
-        config: {
-            encoding: 'WEBM_OPUS',
-            sampleRateHertz: 16000,
-            languageCode: 'pl-PL'
-        }
-    };
+        console.log("Otrzymano żądanie POST");
+        console.log("Nazwa pliku:", req.file?.originalname || "Brak pliku");
+        console.log("Rozmiar pliku:", req.file?.size || 0);
+        
+        const client = new speech.SpeechClient();
+        const audioBytes = req.file.buffer.toString('base64');
 
-    const [response] = await client.recognize(request);
-    const transcryption = response.results.map((result) => result.alternatives[0].transcript).join('\n');
+        const request = {
+            audio: {content: audioBytes},
+            config: {
+                encoding: 'WEBM_OPUS',
+                sampleRateHertz: 16000,
+                languageCode: 'pl-PL'
+            }
+        };
 
-    await sendEmail(transcryption, "user@example.com")
+        const [response] = await client.recognize(request);
+        const transcryption = response.results.map((result) => result.alternatives[0].transcript).join('\n');
 
-    res.json({ transcryption })
+        await sendEmail(transcryption, "user@example.com")
+
+        const filePath = path.join(__dirname, 'uploads','transcriptions.json');
+        await saveToJSON(transcryption, filePath)
+
+        res.json({ transcryption })
+    }catch(error){
+        console.error("Błąd podczas przetwarzania pliku:", error);
+        res.status(500).json({ error: "Błąd serwera" });
+    }
 
 })
+
+/** 
+* Funkcja zapisująca transkrypcję do pliku JSON.
+ * @param {string} transcription - Tekst transkrypcji do zapisania.
+ * @param {string} filePath - Ścieżka do pliku JSON.
+ */
+async function saveToJSON(transcription, filePath) {
+    let data = [];
+
+    try {
+        // Wczytywanie istniejących danych (jeśli plik istnieje)
+        const fileContent = await fs.readFile(filePath, 'utf-8');
+        data = JSON.parse(fileContent);
+    } catch (err) {
+        if (err.code !== 'ENOENT') {
+            throw err; // Rzuć błąd, jeśli to nie problem z brakiem pliku
+        }
+    }
+
+    // Dodanie nowej transkrypcji z datą
+    const newEntry = {
+        date: new Date().toISOString(),
+        transcription
+    };
+    data.push(newEntry);
+
+    // Zapis danych do pliku
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+
 
 /**
  * The function `sendEmail` sends an email with a transcription to a specified recipient using
