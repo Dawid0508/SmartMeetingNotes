@@ -2,6 +2,9 @@ body {
     font-family: Arial, sans-serif;
     text-align: center;
     padding: 20px;
+    width: 400px;
+    height: 400px;
+    overflow: auto;
 }
 
 h1 {
