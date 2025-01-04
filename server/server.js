@@ -10,6 +10,8 @@ const upload = multer({ dest: 'uploads/' });
 const client = new speech.SpeechClient();
 
 app.post('/transcribe', upload.single('file'), async (req, res) => {
+    console.log('Received file:', req.file); // Debug: informacje o pliku
+    console.log('File size:', req.file.size, 'bytes'); // Debug: rozmiar pliku
     const filePath = req.file.path;
 
     try {
@@ -21,7 +23,8 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
         const config = {
             encoding: 'WEBM_OPUS',
             sampleRateHertz: 48000,
-            languageCode: 'en-US',
+            languageCode: 'pl-PL',
+            enableWordTimeOffsets: true, // Włączanie offsetów czasowych
         };
 
         const request = { audio, config };
@@ -34,14 +37,37 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
 
         console.log(`Transcription: ${transcription}`);
 
+        // Tworzenie szczegółowej analizy słów z czasami
+        const wordDetails = [];
+        response.results.forEach(result => {
+            result.alternatives[0].words.forEach(wordInfo => {
+                const startSecs = `${wordInfo.startTime.seconds || 0}.${(wordInfo.startTime.nanos || 0) / 100000000}`;
+                const endSecs = `${wordInfo.endTime.seconds || 0}.${(wordInfo.endTime.nanos || 0) / 100000000}`;
+                wordDetails.push({
+                    word: wordInfo.word,
+                    start: startSecs,
+                    end: endSecs,
+                });
+            });
+        });
+
         // Tworzenie ścieżki do pliku
         const outputFilePath = path.join(__dirname, 'uploads', `${req.file.filename}-transcription.txt`);
+        const wordDetailsFilePath = path.join(__dirname, 'uploads', `${req.file.filename}-word-details.json`);
 
         // Zapisanie transkrypcji do pliku
         fs.writeFileSync(outputFilePath, transcription, 'utf8');
 
+        // Zapisanie szczegółów słów do pliku JSON
+        fs.writeFileSync(wordDetailsFilePath, JSON.stringify(wordDetails, null, 2), 'utf8');
+
         // Odpowiedź do klienta
-        res.json({ message: 'Transcription completed', transcription, filePath: outputFilePath });
+        res.json({ 
+            message: 'Transcription completed', 
+            transcription, 
+            transcriptionFilePath: outputFilePath, 
+            wordDetailsFilePath 
+        });
 
         // Usunięcie oryginalnego pliku audio po zapisaniu transkrypcji
         fs.unlinkSync(filePath);

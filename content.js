@@ -30,10 +30,14 @@ function onAccessApproved(stream){
         document.body.removeChild(a);
 
         URL.revokeObjectURL(url);
+
+        // Wywołanie processAudio, aby przesłać plik na serwer
+        processAudio(recordedBlob);
     }
 }
 
 async function processAudio(audioBlob) {
+    console.log('Blob size:', audioBlob.size, 'bytes'); // Debug: rozmiar pliku
     const formData = new FormData();
     formData.append('file', audioBlob, 'audio.webm');
 
