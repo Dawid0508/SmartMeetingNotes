@@ -1,55 +1,32 @@
-let stream; // Globalny strumień dla popup.js
+document.addEventListener("DOMContentLoaded", ()=>{
+    // GET THE SELECTORS OF THE BUTTONS
+    const startVideoButton = document.querySelector("button#start-recording")
+    const stopVideoButton = document.querySelector("button#stop-recording")
 
-document.getElementById("start-recording").addEventListener("click", () => {
-    // Sprawdź, czy `getDisplayMedia` jest obsługiwane
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-        console.error("Przeglądarka nie obsługuje getDisplayMedia.");
-        alert("Twoja przeglądarka nie obsługuje funkcji nagrywania ekranu.");
-        return;
-    }
+    // adding event listeners
 
-    navigator.mediaDevices
-        .getDisplayMedia({
-            audio: true,
-            video: false
-        })
-        .then((mediaStream) => {
-            stream = mediaStream; // Zapisz strumień w zmiennej
-            console.log("Strumień dźwięku przechwycony:", stream);
-
-            // Przekazanie strumienia do background.js
-            chrome.runtime.sendMessage(
-                { command: "start-recording" },
-                (response) => {
-                    if (response.success) {
-                        console.log("Nagrywanie rozpoczęte.");
-                        document.getElementById("status").textContent = "Nagrywanie w toku...";
-                        document.getElementById("stop-recording").disabled = false;
-                    } else {
-                        console.error("Błąd podczas rozpoczynania nagrywania:", response.message);
-                    }
+    startVideoButton.addEventListener("click", ()=>{
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+            chrome.tabs.sendMessage(tabs[0].id, {action: "request_recording"},  function(response){
+                if(!chrome.runtime.lastError){
+                    console.log(response)
+                } else{
+                    console.log(chrome.runtime.lastError, 'error line 14')
                 }
-            );
-        })
-        .catch((error) => {
-            console.error("Nie udało się przechwycić dźwięku:", error);
-            alert("Nie udało się przechwycić dźwięku. Sprawdź uprawnienia lub ustawienia przeglądarki.");
-        });
-});
+            })
+        } )
+    })
 
-document.getElementById("stop-recording").addEventListener("click", () => {
-    if (stream) {
-        stream.getTracks().forEach((track) => track.stop()); // Zatrzymaj strumień
-        stream = null; // Wyczyszczenie globalnej zmiennej
-    }
 
-    chrome.runtime.sendMessage({ command: "stop-recording" }, (response) => {
-        if (response.success) {
-            console.log("Nagrywanie zatrzymane.");
-            document.getElementById("status").textContent = "Nagrywanie zakończone.";
-            document.getElementById("stop-recording").disabled = true;
-        } else {
-            console.warn("Błąd podczas zatrzymywania nagrywania:", response.message);
-        }
-    });
-});
+    stopVideoButton.addEventListener("click", ()=>{
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+            chrome.tabs.sendMessage(tabs[0].id, {action: "stopvideo"},  function(response){
+                if(!chrome.runtime.lastError){
+                    console.log(response)
+                } else{
+                    console.log(chrome.runtime.lastError, 'error line 27')
+                }
+            })
+        } )
+    })
+})

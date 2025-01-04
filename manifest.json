@@ -2,7 +2,8 @@
     "manifest_version": 3,
     "name": "SMN: Transkrypcja spotkań",
     "description": "Transkrypcja i podsumowanie twoich spotkań",
-    "version": "1.0",
+    "version": "1.0.5",
+
     "permissions": [
       "activeTab", 
       "tabCapture",
@@ -12,7 +13,19 @@
       "desktopCapture",
       "tabs"
     ],
-    "host_permissions": ["<all_urls>"],
+
+    "content_scripts": [
+      {
+          "matches": ["<all_urls>"],
+          "js": ["content.js"],
+          "run_at": "document_idle"
+      }
+  ],
+    "host_permissions": [
+      "http://*/",
+      "https://*/*"
+    ],
+
     "background": {
       "service_worker": "background.js"
     },
@@ -24,6 +37,5 @@
         "128": "icon.png"
       }
     }
-
   }
   
