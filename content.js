@@ -37,7 +37,9 @@ function onAccessApproved(stream){
 }
 
 async function processAudio(audioBlob) {
+    console.log('Preparing to send file');
     console.log('Blob size:', audioBlob.size, 'bytes'); // Debug: rozmiar pliku
+    
     const formData = new FormData();
     formData.append('file', audioBlob, 'audio.webm');
 
@@ -46,6 +48,14 @@ async function processAudio(audioBlob) {
             method: 'POST',
             body: formData,
         });
+
+        
+        if (!response.ok) {
+            const error = await response.json();
+            console.error('Error transcribing audio:', error);
+            alert(`Error: ${error.error}, Details: ${error.details}`);
+            return;
+        }
 
         const result = await response.json();
         console.log('Transcription:', result.transcription);

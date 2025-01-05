@@ -1,0 +1,14 @@
+{
+  "type": "service_account",
+  "project_id": "persuasive-inn-446912-h9",
+  "private_key_id": "9b20c172cd06a4670925d29948e38dbc369a0e3d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEuwIBADANBgkqhkiG9w0BAQEFAASCBKUwggShAgEAAoIBAQD4zD956m8x0Ooz\n+b2wzGRk4Wn3p32ehXAl5svj3U1a8gVTWPF1wb1/oezVEaQndY5CfQszuXGEzkcb\ngDupgClkMlV9aHFJZTh8jwQ6GEW/8oRxXGsqmVo6FTtPzjTPZLMtLI9MdIPz8BGS\ne4aQ4Is4Ne6PtxHJZA2C1bS8zyrcXDlDw3zqNm5dfe4aUR6Gjjj62W/PClcx9nMO\ngjXU4Rf/UUjzIZdoSwLAQ0/I0Mn6MykUk8BqOt5K3tfaR+8U5efn6hQgX/4j2H4w\n0kkfklledeIfsUSlVtIquLCpDUb05NO3rU8qHultEsGKYnd7uqXpKAlc0/6+LgEp\nF4pWtMWVAgMBAAECgf84Xg4DkRmgL7TgEbToWWZldKyNb2UGhTTjYWbQOVNNR4ft\nWjladIp6YDVIELcgOYIBjlL7ZQhTDmkN0f+yZ1b5XG4B+6eu+T/S+JP8lYM3+boH\n9OhSvmuyvRyy+AT+99GgangM2lkK61kP1uyl5jmkgpOJ+/ALsJ9fBQvtuwH66nex\n40yAPdQsnvJA8gq0GebENvLGk7K0Hsej4HyWiV1mFEfznhsnlvJA8k5COz8n6Dzk\nALL3I/O8FGh6kA/b/6p9xLwwXzh/8HvuueYsyxANLMG8zxRx0aXjx29SrfyKTUXO\nrNtnRrz7pgFfoHY+GAA2Q7+cgxWSLkfGdoOg4vkCgYEA/xwRQ/T3nA50xu3hTmEG\nw/N5k/Cd0hasN+MivWHwgoBtn/yUsQO1hW5xWsoj1DWwNx/Lr/olrrO1YkvkiJi9\nqJeojGyuLMJcLr0kDf6SH0dk6PzSMyaludKAWSXNEm9UhhIXQdKbJq5UncyiYjzD\nDw56MMJ18kdvmmga+d3FNosCgYEA+aqKhrCnTA9CAADGyN5G/nDLDHaWkRwXi6zj\nUxYlwetGLT2eTOpXQDfPfOqmUL9rI2Z6bUSnNI4xqA6EUvd5ymRoQUTgj713973J\ndPHOoEr7wCTJzitGwVq/vJRmkD2rnJz9DP6mcib3kf0qvYv2g9mB4fpSJpR4b8aI\nhz3JmF8CgYEAsRMYYOU+odHe+N3RUAhFG+p6b1fLFDKso7ZDPNUojkz6ytwVkbET\nZGS+xdgdeoUxpXGqfqHRWixfMLWhEbeDnex3D9G4LFVUixS6XARiBNgXkSk79klT\nK2KTuE1mxO8F6nHQNt4q13SWQ1nxNOMcOe1An2u7VsqDCthMMTfgVfUCgYBi7Cat\nDWuMIHOHKseYqTG5+RkK3CX2YwoVRrBfqGPXfRA2Nrb1RNjDUhm9JgA1+FJMGXui\ntdQGZ9zW+MGHWhUAk14XlmHfsjPJjoI2+uRi8LLlQ+5N6SnEzN8xqh8lQboweKdv\nMarjifsH9iasKbvILDNhRVyteqBpsWFBLMMmwwKBgDW+Z4lZNGlnPebY3vMxYUQT\nyAb5lTgUi0WeqAhhDuhnv5TNlBroEmQgIAvgNkYsV/Ds5gl77dC/2Tr+ZlvLvyS8\nZQo55XUPrvwe/01kF3ez54E1CgBMEEYOxY0yiw3OLNXk59mTgyV0HyVJsh/JM4dk\nzCgdSTj5RHCKbo6DVui2\n-----END PRIVATE KEY-----\n",
+  "client_email": "speech-to-text@persuasive-inn-446912-h9.iam.gserviceaccount.com",
+  "client_id": "102762676276797842270",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/speech-to-text%40persuasive-inn-446912-h9.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
+
