@@ -5,6 +5,8 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const { Storage } = require('@google-cloud/storage');
+const ffmpeg = require('fluent-ffmpeg');
+// const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -19,12 +21,6 @@ console.log('GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CR
 const storage = new Storage();
 const bucketName = 'smartmeetingnotes'; // Zmień na swoją nazwę bucketu
 
-function generateTimestampedFilename() {
-    const now = new Date();
-    const date = now.toLocaleDateString('pl-PL').replace(/\//g, '.');
-    const time = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-    return `${time} ${date}.txt`;
-}
 
 // Klient Google Speech-to-Text
 const client = new speech.SpeechClient();
@@ -65,11 +61,6 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
         // Przesyłanie pliku bezpośrednio do GCS
         const gcsUri = await uploadStreamToGCS(req.file.buffer, req.file.originalname);
 
-
-        // // Odczytanie i konwersja audio do Base64
-        // const audio = {
-        //     content: fs.readFileSync(filePath).toString('base64'),
-        // };
         const audio = {
             uri: gcsUri, // Użycie URI pliku w GCS
         };
@@ -120,6 +111,27 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
         res.status(500).json({ error: 'Error during transcription', details: err.message });
     }
 });
+
+
+async function downloadFileFromGCS(gcsUri, destination) {
+    const bucket = storage.bucket(bucketName);
+    const fileName = gcsUri.split('/').pop();
+    const file = bucket.file(fileName);
+
+    return new Promise((resolve, reject) => {
+        file.createReadStream()
+            .pipe(fs.createWriteStream(destination))
+            .on('finish', () => {
+                console.log(`File downloaded to ${destination}`);
+                resolve(destination);
+            })
+            .on('error', (err) => {
+                console.error('Error downloading file from GCS:', err);
+                reject(new Error(`Failed to extract frames: ${err.message}`));;
+            });
+    });
+}
+
 
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');

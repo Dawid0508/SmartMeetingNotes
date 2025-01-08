@@ -1,13 +1,3 @@
 {
-  "type": "service_account",
-  "project_id": "persuasive-inn-446912-h9",
-  "private_key_id": "1615aa792897534ff3d08e8d7ad4bc75575c7afa",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC/dTAgKhpVGLdl\nWnkgGzcyQZ69HyiQlVaaTKlwqe+eFAphrtHu81ARUf6GJCS/sV+SF7ZaBJX21UsO\nrudpLFe6pFX0Xi4PEmlzaU9/8UQqJ//C52T0GYJtui/Ux2h4Vl3K8cPGrf1mOt82\nRzatZfsTP/MDom2VJTyCgqRt3j1/XWAkjR75owHfFKI4ztG+Q25FWsS27Rfw1tr2\nGkblFjqC7S6rBd9w6pEofuEp4ha0tgvvW3qMR/O+RJo2b5gEQt1un097pAuzIjEO\nyE2zZb08qRRfHnjvlAM/WQZk2hoY4AqEo/qcbse5xwLi8/53CGyn9j9AvV35Je0h\nRbmM7bZDAgMBAAECggEAFjMRXHllSj6ubSsbZlShhstDC6zEOFeIjiWbc/vQU+UA\n+yiZIPrHauq193nTZQK9ESR8uV1UwiUjKdWv8Wr51SNe8BHHh2ncHky0siIYhEbV\nChVoiEE49V4kU6i3fVSOVYzI5Y2hFyx2W0XQmjR781Rz6hT4XdXOeVeKl06wlMbc\nYpkwH9AL5iM10j8eNaTgTqYnpD6nLYEo/PDShPaGRQiTfY/tO/8UihJK+hKkFwUV\nUkB3jMVx01aM4eOCCB2MqFpF2zpIOgeKnliABJWR7A2wK5ixpawDzDpTacgxxXW6\noW4yit0+i0J3zWKVDmcuDy21fcSfUiRp8F7FWDx5wQKBgQDy0h14v0NnkEtKBkAT\nIbBkHwvGoSz7yycNVXeGh17TYzUZbDmCIX7X9wyhTMcKOlJRcQRKOKQOLjrq6P2U\nJ7khOkHgcSU6qWvUR/+oFJqwlzgRg/RYapRmFvsXgghT4ujB53qksF9Z0KKJxw7V\nVvrFg7P7hFlZ3GNqLkxuZB/LIQKBgQDJ2Wg/Rod/9QCppChiE7HMjJJcKfQlCSQd\nD9ktQUgfFCtHzqse40UH4nxavCMph3R10yRb+qsv4xny7z0gaI/oaEgRb+S+Oqt1\nipyjKH4WZRv5NimDLmV498ijHdrrPwuHCJmwLAItCwhoigKoMwMXwC19ZRDel1P5\n8daR+QGY4wKBgQCvOo3mGzBLRkfuzX/jzoX6WqUm3B0YP8yYxLqSrJHzvj4NcJo3\nnHBq7W+B32Qrr1bESuirnyBU02vVJfoItnnUzrPHgh85rBWShbqq0uOm2BmwGid0\nvsUEv0TH/CCCWNdbRu6sdlL4/6SsBKhhsHkbnCWANkw8mtxrPaoOZ9bBwQKBgQC/\nVAW9nLQJtQmow4LH3JU3J7QACoByrqR9q60XeX7Mfsi7qwmHILQpUiS/uP+3eL8K\nhFY9nXCw1pqdLOqLErH+AQL3DFINgv1NUFNDULmbrsGCSzW0M8FZlb2n6D+/pyXd\nHGjZlg2F9qREuzTjjF8NH0u/RZJk+5pNHFBgU2CRMwKBgQCP7MWtSitb+usRDpCk\n1D4b/1ArAToy7VLcPg9Law89PikJC5qFXnK9i7tmFjUovLOP8XGBKD40ky3jJw+8\n51s17FrOtlmy8omcOgjjipnqBYsk4DA5c0al834i0bNL0SVZSfSLp3K4dx1ncA1B\nF1pUQazsj40DMf3VcEedJaIqsw==\n-----END PRIVATE KEY-----\n",
-  "client_email": "speech-to-text@persuasive-inn-446912-h9.iam.gserviceaccount.com",
-  "client_id": "102762676276797842270",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/speech-to-text%40persuasive-inn-446912-h9.iam.gserviceaccount.com",
-  "universe_domain": "googleapis.com"
+  tu dajecie swoje klucze z google cloud
 }

@@ -1,3 +1,1 @@
-# Ignore Google Cloud key files
-*.json
-*.p12
+.env
