@@ -19,13 +19,12 @@ console.log('GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CR
 const storage = new Storage();
 const bucketName = 'smartmeetingnotes'; // Zmień na swoją nazwę bucketu
 
-// async function uploadFileToGCS(filePath, destination) {
-//     await storage.bucket(bucketName).upload(filePath, {
-//         destination, // Nazwa pliku w bucket
-//     });
-//     console.log(`${filePath} uploaded to ${bucketName}/${destination}`);
-//     return `gs://${bucketName}/${destination}`;
-// }
+function generateTimestampedFilename() {
+    const now = new Date();
+    const date = now.toLocaleDateString('pl-PL').replace(/\//g, '.');
+    const time = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    return `${time} ${date}.txt`;
+}
 
 // Klient Google Speech-to-Text
 const client = new speech.SpeechClient();
