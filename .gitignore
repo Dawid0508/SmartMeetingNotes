@@ -1,6 +1,7 @@
-.env
-google_cloud_key.json
+server/.env
 server/google_cloud_key.json
+google_cloud_key.json
 server/uploads/frames/*
-!server/uploads/frames/
+!server/uploads/frames/*
 server/uploads/transcription
+
