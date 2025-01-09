@@ -16,7 +16,7 @@ app.use(cors());
 const upload = multer(); // Multer bez opcji 'dest', więc plik nie jest zapisywany na dysku lokalnym
 
 require('dotenv').config();
-process.env.GOOGLE_APPLICATION_CREDENTIALS;
+process.env.GOOGLE_APPLICATION_CREDENTIALS.split(String.raw`\n`).join('\n');
 console.log('GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || process.env.GOOGLE_APPLICATION_CREDENTIALS);
 
 // Konfiguracja klienta Google Cloud Storage
@@ -177,31 +177,31 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
         const request = { audio, config };
 
         // Wykonanie długiej transkrypcji
-            console.log('Starting longRunningRecognize...');
-            const [operation] = await client.longRunningRecognize(request);
-            const [response] = await operation.promise();
-            console.log('Transcription completed.');
-    
-            // Przetwarzanie wyników
-            const transcription = response.results
-                .map(result => result.alternatives[0].transcript)
-                .join('\n');
-            console.log(`Transcription: ${transcription}`);
+        console.log('Starting longRunningRecognize...');
+        const [operation] = await client.longRunningRecognize(request);
+        const [response] = await operation.promise();
+        console.log('Transcription completed.');
+
+        // Przetwarzanie wyników
+        const transcription = response.results
+            .map(result => result.alternatives[0].transcript)
+            .join('\n');
+        console.log(`Transcription: ${transcription}`);
 
         // Tworzenie ścieżki do pliku
         const outputFilePath = path.join(__dirname, 'uploads', 'transcription');
 
-        try{
+        try {
             // Zapisanie transkrypcji do pliku
             fs.writeFileSync(outputFilePath, transcription, 'utf8');
             console.log(`Transcription saved to ${outputFilePath}`)
-             // Sprawdzenie, czy plik istnieje po zapisaniu
+            // Sprawdzenie, czy plik istnieje po zapisaniu
             if (fs.existsSync(outputFilePath)) {
                 console.log(`File exists: ${outputFilePath}`);
             } else {
                 console.error(`File does not exist after writing: ${outputFilePath}`);
             }
-        } catch (err){
+        } catch (err) {
             console.error('Error writing transcription file:', err);
         }
 
@@ -223,11 +223,11 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
         console.log('OCR results:', ocrResults);
 
         // Odpowiedź do klienta
-        res.json({ 
-            message: 'Transcription completed', 
-            transcription, 
+        res.json({
+            message: 'Transcription completed',
+            transcription,
             transcriptionFilePath: outputFilePath,
-            framesDirectory: outputDir 
+            framesDirectory: outputDir
         });
 
         // Usunięcie oryginalnego pliku audio po zapisaniu transkrypcji
