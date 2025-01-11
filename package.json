@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@google-ai/generativelanguage": "^2.8.0",
+    "axios": "^1.7.9",
     "image-hash": "^5.3.2"
   }
 }

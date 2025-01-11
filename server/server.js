@@ -9,6 +9,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const Tesseract = require('tesseract.js');
 const crypto = require('crypto'); // Importowanie biblioteki crypto
 const { imageHash } = require('image-hash');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 
 const app = express();
@@ -155,6 +156,16 @@ async function performOCROnFrames(outputDir) {
     return ocrResults;
 }
 
+async function summarizeTranscription(transcription) {
+    const client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = client.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const prompt = `Podsumuj następującą transkrypcję, opisz czego dotyczyło spotkanie i wypisz jego najbardziej istotne fragmenty:\n\n${transcription}`;
+
+    const result = await model.generateContent(prompt);
+    console.log(result.response.text())
+
+}
+
 app.post('/transcribe', upload.single('file'), async (req, res) => {
     console.log('Received file:', req.file); // Debug: informacje o pliku
     console.log('File size:', req.file.size, 'bytes'); // Debug: rozmiar pliku
@@ -222,10 +233,15 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
         const ocrResults = await performOCROnFrames(outputDir);
         console.log('OCR results:', ocrResults);
 
+        // Podsumowanie transkrypcji
+        const summary = await summarizeTranscription(transcription);
+        console.log('Summary:', summary);
+
         // Odpowiedź do klienta
         res.json({
             message: 'Transcription completed',
             transcription,
+            summary,
             transcriptionFilePath: outputFilePath,
             framesDirectory: outputDir
         });
