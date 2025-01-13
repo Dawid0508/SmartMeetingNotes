@@ -260,9 +260,9 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
         });
         clientMail.sendEmail({
             "From": "smnotes@mdm.pl",
-            "To": "receiver@example.com",
-            "Subject": "Test",
-            "TextBody": `Oto twoje podsumowanie: $summary`
+            "To": userMail,
+            "Subject": "Podsumowanie spotkania",
+            "TextBody": `Oto twoje podsumowanie: $summary \n Transkrypcja: \n $transcription`
         });
         
         // Usunięcie oryginalnego pliku audio po zapisaniu transkrypcji
