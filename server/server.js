@@ -10,10 +10,11 @@ const Tesseract = require('tesseract.js');
 const crypto = require('crypto'); // Importowanie biblioteki crypto
 const { imageHash } = require('image-hash');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-
+const bodyParser = require('body-parser');
 
 const app = express();
 app.use(cors());
+app.use(bodyParser.json());
 const upload = multer(); // Multer bez opcji 'dest', więc plik nie jest zapisywany na dysku lokalnym
 
 require('dotenv').config();
@@ -26,6 +27,11 @@ const bucketName = 'smartmeetingnotes'; // Zmień na swoją nazwę bucketu
 
 // Klient Google Speech-to-Text
 const client = new speech.SpeechClient();
+
+// Klient do wysylania maili Postmark
+var serverToken = process.env.postmark;
+var clientMail = new postmark.ServerClient(serverToken);
+
 
 async function uploadStreamToGCS(buffer, destination) {
     const bucket = storage.bucket(bucketName);
@@ -166,6 +172,12 @@ async function summarizeTranscription(transcription) {
 
 }
 
+let userMail;
+app.post('/submit-email', (req, res) => {
+    const { email } = req.body;
+    userMail=email;
+});
+
 app.post('/transcribe', upload.single('file'), async (req, res) => {
     console.log('Received file:', req.file); // Debug: informacje o pliku
     console.log('File size:', req.file.size, 'bytes'); // Debug: rozmiar pliku
@@ -237,6 +249,7 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
         const summary = await summarizeTranscription(transcription);
         console.log('Summary:', summary);
 
+
         // Odpowiedź do klienta
         res.json({
             message: 'Transcription completed',
@@ -245,7 +258,13 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
             transcriptionFilePath: outputFilePath,
             framesDirectory: outputDir
         });
-
+        clientMail.sendEmail({
+            "From": "smnotes@mdm.pl",
+            "To": "receiver@example.com",
+            "Subject": "Test",
+            "TextBody": `Oto twoje podsumowanie: $summary`
+        });
+        
         // Usunięcie oryginalnego pliku audio po zapisaniu transkrypcji
         // fs.unlinkSync(filePath);
     } catch (err) {

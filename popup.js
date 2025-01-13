@@ -36,3 +36,22 @@ document.addEventListener("DOMContentLoaded", ()=>{
         } )
     })
 })
+document.getElementById('email').addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+        const email = document.getElementById('email').value;        
+        fetch('/submit-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Sukces:', data);
+        })
+        .catch(error => {
+            console.error('Błąd:', error);
+        });
+    }
+});

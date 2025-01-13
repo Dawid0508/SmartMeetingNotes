@@ -12,9 +12,18 @@
 
     <body>
         <h1>Transkrypcja spotkań</h1>
+        <div>
         <button id="start-recording" class="btn btn-success">Rozpocznij nagrywanie</button>
         <button id="stop-recording" class="btn btn-danger">Zatrzymaj nagrywanie</button>
-        <p id="status">Gotowe do nagrywania.</p>
+        <p id="status">Gotowe do nagrywania</p>
+        </div>
+        <form>
+            <div class="form-group">
+              <label for="InputEmail">Adres email</label>
+              <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="twojmail@domena.xyz">
+              <small id="emailHelp" class="form-text text-muted">Na ten adres otrzymasz całą transkrypcje interesującego Cię spotkania.</small>
+            </div>
+        </form>          
         <script src="popup.js"></script>
     </body>
     
