@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 })
 document.getElementById('email').addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {
-        const email = document.getElementById('email').value;        
+        const email = document.getElementById('email').value;
         fetch('/submit-email', {
             method: 'POST',
             headers: {

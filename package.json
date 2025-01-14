@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "@google-ai/generativelanguage": "^2.8.0",
+    "@google/generative-ai": "^0.21.0",
     "axios": "^1.7.9",
-    "image-hash": "^5.3.2"
+    "image-hash": "^5.3.2",
+    "postmark": "^4.0.5"
   }
 }

@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "SMN: Transkrypcja spotkań",
     "description": "Transkrypcja i podsumowanie twoich spotkań",
-    "version": "1.0.26",
+    "version": "2.0.5",
 
     "permissions": [
       "activeTab", 

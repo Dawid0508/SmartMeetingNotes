@@ -11,6 +11,9 @@ const crypto = require('crypto'); // Importowanie biblioteki crypto
 const { imageHash } = require('image-hash');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const bodyParser = require('body-parser');
+const postmark = require("postmark");
+const nodemailer = require('nodemailer');
+const { env } = require('process');
 
 const app = express();
 app.use(cors());
@@ -98,7 +101,7 @@ async function extractFrames(videoPath, outputDir) {
                 resolve();
             })
             .output(path.join(outputDir, 'frame-%04d.png'))
-            .outputOptions(['-vf fps=1']) // FPS = 1 frame per second
+            .outputOptions(['-vf fps=0.2']) // FPS = 1 frame per second
             .run();
     });
 }
@@ -162,21 +165,42 @@ async function performOCROnFrames(outputDir) {
     return ocrResults;
 }
 
-async function summarizeTranscription(transcription) {
+async function summarizeTranscription(transcription, ocrResults) {
     const client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = client.getGenerativeModel({ model: "gemini-1.5-pro" });
-    const prompt = `Podsumuj następującą transkrypcję, opisz czego dotyczyło spotkanie i wypisz jego najbardziej istotne fragmenty:\n\n${transcription}`;
+    let ocrSummary = 'Wyniki OCR:\n';
+    ocrResults.forEach(result => {
+        ocrSummary += `Plik: ${result.file}\nTekst: ${result.text}\n\n`;
+    });
+
+    const prompt = `Podsumuj następującą transkrypcję, opisz czego dotyczyło spotkanie i wypisz jego najbardziej istotne fragmenty:\n\n${transcription}\n\n${ocrSummary}`;
 
     const result = await model.generateContent(prompt);
-    console.log(result.response.text())
+    //console.log(result.response.text())
+    return result.response.text();
 
 }
+
+// Konfiguracja transportu SMTP
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com', // Adres serwera SMTP
+    port: 587, // Port SMTP (587 dla STARTTLS, 465 dla SSL)
+    secure: false, // Używaj 'true', jeśli port to 465
+    auth: {
+        user: process.env.EMAIL, // Twój adres e-mail
+        pass: process.env.EMAIL_PASSWORD, // Twoje hasło do skrzynki e-mail
+    },
+});
 
 let userMail;
 app.post('/submit-email', (req, res) => {
     const { email } = req.body;
-    userMail=email;
+    //userMail=email;
+    console.log('Email entered:', userMail); // Debug: logowanie adresu e-mail
 });
+userMail='dawidgruszecki07@gmail.com';
+
+
 
 app.post('/transcribe', upload.single('file'), async (req, res) => {
     console.log('Received file:', req.file); // Debug: informacje o pliku
@@ -246,7 +270,7 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
         console.log('OCR results:', ocrResults);
 
         // Podsumowanie transkrypcji
-        const summary = await summarizeTranscription(transcription);
+        const summary = await summarizeTranscription(transcription, ocrResults);
         console.log('Summary:', summary);
 
 
@@ -256,15 +280,33 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
             transcription,
             summary,
             transcriptionFilePath: outputFilePath,
-            framesDirectory: outputDir
+            framesDirectory: outputDir,
         });
-        clientMail.sendEmail({
-            "From": "smnotes@mdm.pl",
-            "To": userMail,
-            "Subject": "Podsumowanie spotkania",
-            "TextBody": `Oto twoje podsumowanie: $summary \n Transkrypcja: \n $transcription`
+        // Opcje wiadomości
+        const mailOptions = {
+            from: process.env.EMAIL, // Adres nadawcy
+            to: userMail, // Adres odbiorcy (może być lista rozdzielona przecinkami)
+            subject: 'Podsumowanie spotkania', // Temat wiadomości
+            text: `Oto twoje podsumowanie: ${summary} \n Transkrypcja: \n ${transcription}`, // Treść w formacie tekstowym
+            html: `
+                <h1>Podsumowanie spotkania</h1>
+                <p><strong>Podsumowanie:</strong></p>
+                <p>${summary}</p>
+                <hr>
+                <p><strong>Transkrypcja:</strong></p>
+                <pre>${transcription}</pre>
+            `,
+        };
+
+        // Wysyłanie wiadomości
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log('Error occurred:', error.message);
+            } else {
+                console.log('Email sent:', info.response);
+            }
         });
-        
+
         // Usunięcie oryginalnego pliku audio po zapisaniu transkrypcji
         // fs.unlinkSync(filePath);
     } catch (err) {
