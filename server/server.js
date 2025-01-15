@@ -101,7 +101,7 @@ async function extractFrames(videoPath, outputDir) {
                 resolve();
             })
             .output(path.join(outputDir, 'frame-%04d.png'))
-            .outputOptions(['-vf fps=0.2']) // FPS = 1 frame per second
+            .outputOptions(['-vf fps=0.2']) // FPS = 1 frame per 5 seconds
             .run();
     });
 }
@@ -198,9 +198,13 @@ app.post('/submit-email', (req, res) => {
     //userMail=email;
     console.log('Email entered:', userMail); // Debug: logowanie adresu e-mail
 });
-userMail='dawidgruszecki07@gmail.com';
+userMail = 'mateusznu@gmail.com';
 
-
+app.post('/log-event', (req, res) => {
+    const eventDetails = req.body;
+    console.log('Received event details:', eventDetails);
+    res.json({ message: 'Event details logged successfully' });
+});
 
 app.post('/transcribe', upload.single('file'), async (req, res) => {
     console.log('Received file:', req.file); // Debug: informacje o pliku

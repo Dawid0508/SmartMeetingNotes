@@ -1,41 +1,49 @@
 {
-    "manifest_version": 3,
-    "name": "SMN: Transkrypcja spotkań",
-    "description": "Transkrypcja i podsumowanie twoich spotkań",
-    "version": "2.0.5",
-
-    "permissions": [
-      "activeTab", 
-      "tabCapture",
-      "offscreen",
-      "scripting",
-      "storage",
-      "desktopCapture",
-      "tabs"
-    ],
-
-    "content_scripts": [
-      {
-          "matches": ["<all_urls>"],
-          "js": ["content.js"],
-          "run_at": "document_idle"
-      }
+  "manifest_version": 3,
+  "name": "SMN: Transkrypcja spotkań",
+  "description": "Transkrypcja i podsumowanie twoich spotkań",
+  "version": "1.0.26",
+  "permissions": [
+    "activeTab",
+    "tabCapture",
+    "offscreen",
+    "scripting",
+    "storage",
+    "desktopCapture",
+    "tabs",
+    "identity"
   ],
-    "host_permissions": [
-      "http://*/",
-      "https://*/*"
-    ],
-
-    "background": {
-      "service_worker": "background.js"
-    },
-    "action": {
-      "default_popup": "popup.html",
-      "default_icon": {
-        "16": "icon.png",
-        "48": "icon.png",
-        "128": "icon.png"
-      }
+  "oauth2": {
+    "client_id": "245123747288-cm6psbda0g944fh809sbgkg9md7alfgv.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/calendar.events",
+      "https://www.googleapis.com/auth/calendar"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": [
+    "http://*/",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
     }
   }
-  
+}

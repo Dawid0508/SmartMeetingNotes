@@ -1,21 +1,21 @@
 console.log("Hi, I have been injected whoopie!!!")
 
 var recorder = null
-function onAccessApproved(stream){
+function onAccessApproved(stream) {
     recorder = new MediaRecorder(stream);
 
     recorder.start();
 
-    recorder.onstop = function(){
-        stream.getTracks().forEach(function(track){
-            if(track.readyState === "live"){
+    recorder.onstop = function () {
+        stream.getTracks().forEach(function (track) {
+            if (track.readyState === "live") {
                 track.stop()
             }
         })
     }
 
-    recorder.ondataavailable = function(event){
-        let recordedBlob  = event.data;
+    recorder.ondataavailable = function (event) {
+        let recordedBlob = event.data;
         let url = URL.createObjectURL(recordedBlob);
 
         let a = document.createElement("a");
@@ -39,7 +39,7 @@ function onAccessApproved(stream){
 async function processAudio(audioBlob) {
     console.log('Preparing to send file');
     console.log('Blob size:', audioBlob.size, 'bytes'); // Debug: rozmiar pliku
-    
+
     const formData = new FormData();
     formData.append('file', audioBlob, 'audio.webm');
 
@@ -49,7 +49,7 @@ async function processAudio(audioBlob) {
             body: formData,
         });
 
-        
+
         if (!response.ok) {
             const error = await response.json();
             console.error('Error transcribing audio:', error);
@@ -66,28 +66,28 @@ async function processAudio(audioBlob) {
 }
 
 
-chrome.runtime.onMessage.addListener( (message, sender, sendResponse)=>{
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
-    if(message.action === "request_recording"){
+    if (message.action === "request_recording") {
         console.log("requesting recording")
 
         sendResponse(`processed: ${message.action}`);
 
         navigator.mediaDevices.getDisplayMedia({
-            audio:true,
+            audio: true,
             video: {
-                width:9999999999,
+                width: 9999999999,
                 height: 9999999999
             }
-        }).then((stream)=>{
+        }).then((stream) => {
             onAccessApproved(stream)
-        })  
+        })
     }
 
-    if(message.action === "stopvideo"){
+    if (message.action === "stopvideo") {
         console.log("stopping video");
         sendResponse(`processed: ${message.action}`);
-        if(!recorder) return console.log("no recorder")
+        if (!recorder) return console.log("no recorder")
 
         recorder.stop();
 

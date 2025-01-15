@@ -1,30 +1,76 @@
-<!--interfejs użytkownika-->
-
 <!DOCTYPE html>
 <html lang="pl">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>SMN: Transkrypcja</title>
-        <link rel="stylesheet" type="text/css" href="css/styles.css">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    </head>
 
-    <body>
-        <h1>Transkrypcja spotkań</h1>
-        <div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMN: Transkrypcja</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        /* Add some basic styling */
+        #event-form {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .btn {
+            width: 150px;
+            margin: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Transkrypcja spotkań</h1>
+    <div>
         <button id="start-recording" class="btn btn-success">Rozpocznij nagrywanie</button>
         <button id="stop-recording" class="btn btn-danger">Zatrzymaj nagrywanie</button>
-        <p id="status">Gotowe do nagrywania</p>
+        <button id="create-event" class="btn btn-primary">Utwórz wydarzenie</button>
+        <p id="status">Gotowe do nagrywania.</p>
+    </div>
+
+    <form id="event-form">
+        <div class="mb-3">
+            <label for="summary" class="form-label">Podsumowanie:</label>
+            <input type="text" id="summary" name="summary" class="form-control" value="Spotkanie online">
         </div>
-        <form>
-            <div class="form-group">
-                <label for="InputEmail">Adres email</label>
-                <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="twojmail@domena.xyz">
-                <small id="emailHelp" class="form-text text-muted">Na ten adres otrzymasz całą transkrypcje interesującego Cię spotkania.</small>
-            </div>
-        </form>          
-        <script src="popup.js"></script>
-    </body>
-    
+        <div class="mb-3">
+            <label for="location" class="form-label">Miejsce:</label>
+            <input type="text" id="location" name="location" class="form-control" value="Google Meet">
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Opis:</label>
+            <input type="text" id="description" name="description" class="form-control"
+                value="Cotygodniowe spotkanie zespołu.">
+        </div>
+        <div class="mb-3">
+            <label for="startDateTime" class="form-label">Początek spotkania:</label>
+            <input type="datetime-local" id="startDateTime" name="startDateTime" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="endDateTime" class="form-label">Koniec spotkania:</label>
+            <input type="datetime-local" id="endDateTime" name="endDateTime" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="timeZone" class="form-label">Strefa czasowa:</label>
+            <input type="text" id="timeZone" name="timeZone" class="form-control" value="GMT+1">
+        </div>
+        <button type="button" id="submit-event" class="btn btn-primary">Prześlij</button>
+    </form>
+
+    <form>
+        <div class="form-group">
+            <label for="InputEmail">Adres email</label>
+            <input type="email" class="form-control" id="email" aria-describedby="emailHelp"
+                placeholder="twojmail@domena.xyz">
+            <small id="emailHelp" class="form-text text-muted">Na ten adres otrzymasz całą transkrypcje interesującego
+                Cię spotkania.</small>
+        </div>
+    </form>
+
+    <script src="popup.js"></script>
+</body>
+
 </html>
