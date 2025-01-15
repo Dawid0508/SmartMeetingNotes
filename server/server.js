@@ -173,7 +173,7 @@ async function summarizeTranscription(transcription, ocrResults) {
         ocrSummary += `Plik: ${result.file}\nTekst: ${result.text}\n\n`;
     });
 
-    const prompt = `Podsumuj następującą transkrypcję, opisz czego dotyczyło spotkanie i wypisz jego najbardziej istotne fragmenty:\n\n${transcription}\n\n${ocrSummary}`;
+    const prompt = `Podsumuj następującą transkrypcję, opisz czego dotyczyło spotkanie i wypisz jego najbardziej istotne fragmenty:\n\n${transcription}\n\n${ocrSummary} oddziel transkrypcja od ocr summary`;
 
     const result = await model.generateContent(prompt);
     //console.log(result.response.text())
@@ -198,7 +198,7 @@ app.post('/submit-email', (req, res) => {
     //userMail=email;
     console.log('Email entered:', userMail); // Debug: logowanie adresu e-mail
 });
-userMail = 'mateusznu@gmail.com';
+userMail = 'dawidgruszecki07@gmail.com';
 
 app.post('/log-event', (req, res) => {
     const eventDetails = req.body;
