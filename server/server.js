@@ -101,7 +101,10 @@ async function extractFrames(videoPath, outputDir) {
                 resolve();
             })
             .output(path.join(outputDir, 'frame-%04d.png'))
-            .outputOptions(['-vf fps=0.2']) // FPS = 1 frame per 5 seconds
+            .complexFilter([
+                '[0:v] fps=1/5, crop=1580:980:40:140 [v]'
+            ])
+            .map('[v]')
             .run();
     });
 }
@@ -173,7 +176,7 @@ async function summarizeTranscription(transcription, ocrResults) {
         ocrSummary += `Plik: ${result.file}\nTekst: ${result.text}\n\n`;
     });
 
-    const prompt = `Podsumuj następującą transkrypcję, opisz czego dotyczyło spotkanie i wypisz jego najbardziej istotne fragmenty:\n\n${transcription}\n\n${ocrSummary} oddziel transkrypcja od ocr summary`;
+    const prompt = `Podsumuj następującą transkrypcję, opisz czego dotyczyło spotkanie i wypisz jego najbardziej istotne fragmenty:\n\n${transcription}\n\n${ocrSummary}, oddziel transkrypcję od OCR summary, w podsumowaniu pomijaj przypadkowe symbole i frazy zebrane w trakcie OCR. Sformatuj całe podsumowanie w HTML.`;
 
     const result = await model.generateContent(prompt);
     //console.log(result.response.text())
@@ -192,13 +195,32 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-let userMail;
+// let userMail;
+let userMails = [];
+
 app.post('/submit-email', (req, res) => {
     const { email } = req.body;
-    //userMail=email;
-    console.log('Email entered:', userMail); // Debug: logowanie adresu e-mail
+    if (email && !userMails.includes(email)) {
+        userMails.push(email);
+        console.log('Email added:', email); // Log when email is added
+        res.json({ message: 'Email added successfully', emails: userMails });
+    } else {
+        res.status(400).json({ message: 'Nieprawidłowy lub powielony adres.' });
+    }
 });
-userMail = 'dawidgruszecki07@gmail.com';
+
+app.get('/emails', (req, res) => {
+    res.json({ emails: userMails });
+});
+
+app.delete('/delete-email', (req, res) => {
+    const { email } = req.body;
+    userMails = userMails.filter(e => e !== email);
+    console.log('Email deleted:', email); // Log when email is deleted
+    res.json({ message: 'Email deleted successfully', emails: userMails });
+});
+
+// userMail = 'mateusznu@gmail.com';
 
 app.post('/log-event', (req, res) => {
     const eventDetails = req.body;
@@ -286,10 +308,11 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
             transcriptionFilePath: outputFilePath,
             framesDirectory: outputDir,
         });
-        // Opcje wiadomości
+
+
         const mailOptions = {
             from: process.env.EMAIL, // Adres nadawcy
-            to: userMail, // Adres odbiorcy (może być lista rozdzielona przecinkami)
+            to: userMails, // Adres odbiorcy (może być lista rozdzielona przecinkami)
             subject: 'Podsumowanie spotkania', // Temat wiadomości
             text: `Oto twoje podsumowanie: ${summary} \n Transkrypcja: \n ${transcription}`, // Treść w formacie tekstowym
             html: `
@@ -315,7 +338,9 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
         // fs.unlinkSync(filePath);
     } catch (err) {
         console.error('Error during transcription:', err);
-        res.status(500).json({ error: 'Error during transcription', details: err.message });
+        if (!res.headersSent){
+            res.status(500).json({ error: 'Error during transcription', details: err.message });
+        }
     }
 });
 

@@ -1,11 +1,45 @@
 document.addEventListener("DOMContentLoaded", () => {
-
     const startVideoButton = document.querySelector("button#start-recording");
     const stopVideoButton = document.querySelector("button#stop-recording");
     const createEventButton = document.querySelector("button#create-event");
     const submitEventButton = document.querySelector("button#submit-event");
     const eventForm = document.getElementById("event-form");
+    const emailInput = document.getElementById("email");
+    const addEmailButton = document.getElementById("add-email");
+    const emailList = document.getElementById("email-list");
 
+    function fetchEmails() {
+        fetch('http://localhost:3000/emails')
+            .then(response => response.json())
+            .then(data => {
+                emailList.innerHTML = '';
+                data.emails.forEach(email => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = email;
+                    listItem.addEventListener('click', () => {
+                        fetch('http://localhost:3000/delete-email', {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ email })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log('Email deleted:', email); // Log when email is deleted
+                                fetchEmails(); // Refresh the email list
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+                    });
+                    emailList.appendChild(listItem);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
 
     startVideoButton.addEventListener("click", () => {
         const statusElement = document.getElementById("status");
@@ -77,23 +111,31 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    document.getElementById('email').addEventListener('keydown', function (event) {
-        if (event.key === 'Enter') {
-            const email = document.getElementById('email').value;
-            fetch('/submit-email', {
+    addEmailButton.addEventListener("click", () => {
+        const email = emailInput.value.trim();
+        if (email) {
+            fetch('http://localhost:3000/submit-email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email: email })
+                body: JSON.stringify({ email })
             })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Sukces:', data);
+                    if (data.message === 'Email added successfully') {
+                        console.log('Email added:', email); // Log when email is added
+                        fetchEmails(); // Refresh the email list
+                        emailInput.value = ''; // Clear the input field
+                    } else {
+                        alert(data.message);
+                    }
                 })
                 .catch(error => {
-                    console.error('Błąd:', error);
+                    console.error('Error:', error);
                 });
         }
     });
+
+    fetchEmails(); // Fetch and display emails when the popup is opened
 });

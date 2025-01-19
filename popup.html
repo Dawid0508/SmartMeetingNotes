@@ -19,6 +19,11 @@
             width: 150px;
             margin: 10px;
         }
+
+        /* Add cursor pointer to list items */
+        #email-list li {
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -65,10 +70,12 @@
             <label for="InputEmail">Adres email</label>
             <input type="email" class="form-control" id="email" aria-describedby="emailHelp"
                 placeholder="twojmail@domena.xyz">
-            <small id="emailHelp" class="form-text text-muted">Na ten adres otrzymasz całą transkrypcje interesującego
-                Cię spotkania.</small>
+            <small id="emailHelp" class="form-text text-muted">Wprowadź adresy, na które ma zostać wysłne podsumowanie.</small>
+            <button type="button" id="add-email" class="btn btn-secondary">Dodaj email</button>
         </div>
     </form>
+
+    <ul id="email-list"></ul>
 
     <script src="popup.js"></script>
 </body>
