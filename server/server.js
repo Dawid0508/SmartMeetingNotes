@@ -14,6 +14,8 @@ const bodyParser = require('body-parser');
 const postmark = require("postmark");
 const nodemailer = require('nodemailer');
 const { env } = require('process');
+const sharp = require('sharp');
+
 
 const app = express();
 app.use(cors());
@@ -139,11 +141,49 @@ function hammingDistance(hash1, hash2) {
     return distance;
 }
 
+async function detectChart(imagePath) {
+    const image = sharp(imagePath);
+    const { data, info } = await image.raw().toBuffer({ resolveWithObject: true });
+
+    // Prosty algorytm wykrywania wykresów na podstawie analizy kolorów i kształtów
+    const width = info.width;
+    const height = info.height;
+    const threshold = 128;
+    let chartDetected = false;
+
+    // Analiza kolorów i kształtów
+    let darkPixelCount = 0;
+    const totalPixels = width * height;
+
+    for (let i = 0; i < data.length; i += 3) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        if (r < threshold && g < threshold && b < threshold) {
+            darkPixelCount++;
+        }
+        
+    }
+    // Jeśli liczba ciemnych pikseli przekracza pewien procent, uznajemy, że jest to wykres
+    const darkPixelPercentage = (darkPixelCount / totalPixels) * 100;
+    if (darkPixelPercentage > 10) { // Możesz dostosować ten próg
+        chartDetected = true;
+    }
+
+    return chartDetected;
+}
+
 async function performOCROnFrames(outputDir) {
-    const files = fs.readdirSync(outputDir);
+    const files = fs.readdirSync(outputDir).filter(file => file.endsWith('.png'));;
     const ocrResults = [];
     let previousHash = null;
     const threshold = 5;
+
+    const chartFramesDir = path.join(outputDir, 'charts');
+    if (!fs.existsSync(chartFramesDir)) {
+        fs.mkdirSync(chartFramesDir, { recursive: true });
+    }
 
     for (const file of files) {
         const filePath = path.join(outputDir, file);
@@ -159,6 +199,13 @@ async function performOCROnFrames(outputDir) {
             const { data: { text } } = await Tesseract.recognize(filePath, 'eng');
             console.log(`OCR result for ${filePath}: ${text}`);
             ocrResults.push({ file: filePath, text });
+
+            if (await detectChart(filePath)) {
+                const chartFilePath = path.join(chartFramesDir, path.basename(filePath));
+                fs.copyFileSync(filePath, chartFilePath);
+                console.log(`Chart detected and saved: ${chartFilePath}`);
+            }
+
             previousHash = currentHash;
         } catch (ocrError) {
             console.error(`Error performing OCR on ${filePath}:`, ocrError);
@@ -309,6 +356,13 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
             framesDirectory: outputDir,
         });
 
+        // Przygotowanie załączników z klatkami wykresów
+        const chartFramesDir = path.join(outputDir, 'charts');
+        const attachments = fs.readdirSync(chartFramesDir).map(file => ({
+            filename: file,
+            path: path.join(chartFramesDir, file)
+        }));
+
 
         const mailOptions = {
             from: process.env.EMAIL, // Adres nadawcy
@@ -323,6 +377,7 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
                 <p><strong>Transkrypcja:</strong></p>
                 <pre>${transcription}</pre>
             `,
+            attachments: attachments,
         };
 
         // Wysyłanie wiadomości
