@@ -15,7 +15,9 @@ const postmark = require("postmark");
 const nodemailer = require('nodemailer');
 const { env } = require('process');
 const sharp = require('sharp');
-
+const PDFKitDocument = require('pdfkit');
+const { PDFDocument } = require('pdf-lib');
+const archiver = require('archiver');
 
 const app = express();
 app.use(cors());
@@ -69,7 +71,7 @@ async function downloadFileFromGCS(gcsUri, destination) {
         file.createReadStream()
             .pipe(fs.createWriteStream(destination))
             .on('finish', () => {
-                console.log(`File downloaded to ${destination}`);
+                console.log('File downloaded to ${destination}');
                 resolve(destination);
             })
             .on('error', (err) => {
@@ -167,12 +169,76 @@ async function detectChart(imagePath) {
     }
     // Jeśli liczba ciemnych pikseli przekracza pewien procent, uznajemy, że jest to wykres
     const darkPixelPercentage = (darkPixelCount / totalPixels) * 100;
-    if (darkPixelPercentage > 10) { // Możesz dostosować ten próg
+    if (darkPixelPercentage > 20) { // Możesz dostosować ten próg
         chartDetected = true;
     }
 
     return chartDetected;
 }
+
+function generatePDF(imagePaths, outputPath) {
+    const doc = new PDFKitDocument();
+    doc.pipe(fs.createWriteStream(outputPath));
+
+    let imagesPerPage = 2; // Liczba obrazów na stronę
+    let imagesOnCurrentPage = 0;
+
+    imagePaths.forEach((imagePath, index) => {
+        if (imagesOnCurrentPage === 0 && index !== 0) {
+            // Dodaj nową stronę tylko po pierwszej stronie
+            doc.addPage();
+        }
+        // Pobierz odpowiednią pozycję z tablicy
+        const { x, y } = positions[imagesOnCurrentPage];
+
+        // // Pozycja obrazu na stronie
+        const x = 50; // Margines poziomy
+        const y = imagesOnCurrentPage === 0 ? 100 : 400; // Margines pionowy zależny od obrazu
+
+        doc.image(imagePath, x, y, {
+            fit: [500, 300], // Dopasowanie obrazu
+            align: 'center',
+            valign: 'center',
+        });
+
+        imagesOnCurrentPage++;
+
+        if (imagesOnCurrentPage === imagesPerPage) {
+            imagesOnCurrentPage = 0; // Reset liczby obrazów na stronie
+        }
+    });
+
+    doc.end();
+
+}
+
+// Funkcja do tworzenia archiwum ZIP
+async function createZip(pdfPath, outputZipPath) {
+    return new Promise((resolve, reject) => {
+        const output = fs.createWriteStream(outputZipPath);
+        const archive = archiver('zip', {
+            zlib: { level: 9 } // Maksymalna kompresja
+        });
+
+        output.on('close', () => {
+            console.log(`ZIP created at ${outputZipPath}`);
+            resolve(outputZipPath);
+        });
+
+        archive.on('error', (err) => {
+            console.error('Error creating ZIP:', err);
+            reject(err);
+        });
+
+        archive.pipe(output);
+
+        // Dodaj PDF do archiwum
+        archive.file(pdfPath, { name: 'charts.pdf' });
+
+        archive.finalize();
+    });
+}
+
 
 async function performOCROnFrames(outputDir) {
     const files = fs.readdirSync(outputDir).filter(file => file.endsWith('.png'));;
@@ -184,6 +250,7 @@ async function performOCROnFrames(outputDir) {
     if (!fs.existsSync(chartFramesDir)) {
         fs.mkdirSync(chartFramesDir, { recursive: true });
     }
+    const chartImagePaths = [];
 
     for (const file of files) {
         const filePath = path.join(outputDir, file);
@@ -204,15 +271,22 @@ async function performOCROnFrames(outputDir) {
                 const chartFilePath = path.join(chartFramesDir, path.basename(filePath));
                 fs.copyFileSync(filePath, chartFilePath);
                 console.log(`Chart detected and saved: ${chartFilePath}`);
+
+                // Dodanie ścieżki do listy obrazów wykresów
+                chartImagePaths.push(chartFilePath);
             }
 
             previousHash = currentHash;
         } catch (ocrError) {
-            console.error(`Error performing OCR on ${filePath}:`, ocrError);
+            console.error(`Error performing OCR on ${filePath}:, ocrError`);
         }
     }
 
-    return ocrResults;
+    // Generowanie PDF z wykresami
+    const pdfPath = path.join(outputDir, 'charts.pdf');
+    generatePDF(chartImagePaths, pdfPath);
+
+    return { ocrResults, pdfPath };
 }
 
 async function summarizeTranscription(transcription, ocrResults) {
@@ -267,7 +341,6 @@ app.delete('/delete-email', (req, res) => {
     res.json({ message: 'Email deleted successfully', emails: userMails });
 });
 
-// userMail = 'mateusznu@gmail.com';
 
 app.post('/log-event', (req, res) => {
     const eventDetails = req.body;
@@ -339,13 +412,15 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
         await extractFrames(localVideoPath, outputDir);
 
         // Wykonanie OCR na klatkach
-        const ocrResults = await performOCROnFrames(outputDir);
+        const {ocrResults, pdfPath} = await performOCROnFrames(outputDir);
         console.log('OCR results:', ocrResults);
 
         // Podsumowanie transkrypcji
         const summary = await summarizeTranscription(transcription, ocrResults);
         console.log('Summary:', summary);
 
+        const zipPath = path.join(outputDir, 'charts.zip');
+        await createZip(pdfPath, zipPath);
 
         // Odpowiedź do klienta
         res.json({
@@ -369,7 +444,7 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
             to: userMails, // Adres odbiorcy (może być lista rozdzielona przecinkami)
             subject: 'Podsumowanie spotkania', // Temat wiadomości
             text: `Oto twoje podsumowanie: ${summary} \n Transkrypcja: \n ${transcription}`, // Treść w formacie tekstowym
-            html: `
+            html:`
                 <h1>Podsumowanie spotkania</h1>
                 <p><strong>Podsumowanie:</strong></p>
                 <p>${summary}</p>
@@ -377,7 +452,16 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
                 <p><strong>Transkrypcja:</strong></p>
                 <pre>${transcription}</pre>
             `,
-            attachments: attachments,
+            attachments: [
+                {   
+                    filename: 'charts.pdf',
+                    path: pdfPath
+                },
+                {
+                    filename: 'charts.zip',
+                    path: zipPath, // Archiwum ZIP
+                }
+            ]
         };
 
         // Wysyłanie wiadomości
@@ -399,8 +483,6 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
     }
 });
 
-
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');
 });
-
