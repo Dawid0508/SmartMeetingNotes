@@ -26,8 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         })
                             .then(response => response.json())
                             .then(data => {
-                                console.log('Email deleted:', email); // Log when email is deleted
-                                fetchEmails(); // Refresh the email list
+                                console.log('Email deleted:', email);
+                                fetchEmails();
                             })
                             .catch(error => {
                                 console.error('Error:', error);
@@ -101,12 +101,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         chrome.runtime.sendMessage({ action: 'plan', eventDetails }, (response) => {
             if (response && response.error) {
-                console.error('Błąd przy tworzeniu wydarzenia:', response.error);
+                console.error('Error creating meeting:', response.error);
                 statusElement.innerText = "Wystąpił błąd przy tworzeniu wydarzenia.";
             } else {
                 console.log('Event created:', response.data);
                 statusElement.innerText = "Wydarzenie utworzono poprawnie!";
-                eventForm.style.display = "none"; // Hide the form after submission
+                eventForm.style.display = "none";
             }
         });
     });
@@ -137,5 +137,5 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    fetchEmails(); // Fetch and display emails when the popup is opened
+    fetchEmails();
 });

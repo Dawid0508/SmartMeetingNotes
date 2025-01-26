@@ -165,7 +165,7 @@ async function detectChart(imagePath) {
         if (r < threshold && g < threshold && b < threshold) {
             darkPixelCount++;
         }
-        
+
     }
     // Jeśli liczba ciemnych pikseli przekracza pewien procent, uznajemy, że jest to wykres
     const darkPixelPercentage = (darkPixelCount / totalPixels) * 100;
@@ -188,10 +188,7 @@ function generatePDF(imagePaths, outputPath) {
             // Dodaj nową stronę tylko po pierwszej stronie
             doc.addPage();
         }
-        // Pobierz odpowiednią pozycję z tablicy
-        const { x, y } = positions[imagesOnCurrentPage];
 
-        // // Pozycja obrazu na stronie
         const x = 50; // Margines poziomy
         const y = imagesOnCurrentPage === 0 ? 100 : 400; // Margines pionowy zależny od obrazu
 
@@ -412,7 +409,7 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
         await extractFrames(localVideoPath, outputDir);
 
         // Wykonanie OCR na klatkach
-        const {ocrResults, pdfPath} = await performOCROnFrames(outputDir);
+        const { ocrResults, pdfPath } = await performOCROnFrames(outputDir);
         console.log('OCR results:', ocrResults);
 
         // Podsumowanie transkrypcji
@@ -444,7 +441,7 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
             to: userMails, // Adres odbiorcy (może być lista rozdzielona przecinkami)
             subject: 'Podsumowanie spotkania', // Temat wiadomości
             text: `Oto twoje podsumowanie: ${summary} \n Transkrypcja: \n ${transcription}`, // Treść w formacie tekstowym
-            html:`
+            html: `
                 <h1>Podsumowanie spotkania</h1>
                 <p><strong>Podsumowanie:</strong></p>
                 <p>${summary}</p>
@@ -453,7 +450,7 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
                 <pre>${transcription}</pre>
             `,
             attachments: [
-                {   
+                {
                     filename: 'charts.pdf',
                     path: pdfPath
                 },
@@ -477,7 +474,7 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
         // fs.unlinkSync(filePath);
     } catch (err) {
         console.error('Error during transcription:', err);
-        if (!res.headersSent){
+        if (!res.headersSent) {
             res.status(500).json({ error: 'Error during transcription', details: err.message });
         }
     }
