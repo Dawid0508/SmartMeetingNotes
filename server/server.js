@@ -133,6 +133,7 @@ function getImageHash(filePath) {
 }
 
 
+
 function hammingDistance(hash1, hash2) {
     let distance = 0;
     for (let i = 0; i < hash1.length; i++) {
@@ -209,7 +210,6 @@ function generatePDF(imagePaths, outputPath) {
 
 }
 
-// Funkcja do tworzenia archiwum ZIP
 async function createZip(pdfPath, outputZipPath) {
     return new Promise((resolve, reject) => {
         const output = fs.createWriteStream(outputZipPath);
@@ -297,12 +297,9 @@ async function summarizeTranscription(transcription, ocrResults) {
     const prompt = `Podsumuj następującą transkrypcję, opisz czego dotyczyło spotkanie i wypisz jego najbardziej istotne fragmenty:\n\n${transcription}\n\n${ocrSummary}, oddziel transkrypcję od OCR summary, w podsumowaniu pomijaj przypadkowe symbole i frazy zebrane w trakcie OCR. Sformatuj całe podsumowanie w HTML.`;
 
     const result = await model.generateContent(prompt);
-    //console.log(result.response.text())
     return result.response.text();
-
 }
 
-// Konfiguracja transportu SMTP
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com', // Adres serwera SMTP
     port: 587, // Port SMTP (587 dla STARTTLS, 465 dla SSL)
@@ -313,7 +310,6 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-// let userMail;
 let userMails = [];
 
 app.post('/submit-email', (req, res) => {
@@ -434,8 +430,6 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
             filename: file,
             path: path.join(chartFramesDir, file)
         }));
-
-
         const mailOptions = {
             from: process.env.EMAIL, // Adres nadawcy
             to: userMails, // Adres odbiorcy (może być lista rozdzielona przecinkami)
