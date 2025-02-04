@@ -7,7 +7,7 @@ const cors = require('cors');
 const { Storage } = require('@google-cloud/storage');
 const ffmpeg = require('fluent-ffmpeg');
 const Tesseract = require('tesseract.js');
-const crypto = require('crypto'); // Importowanie biblioteki crypto
+const crypto = require('crypto');
 const { imageHash } = require('image-hash');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const bodyParser = require('body-parser');
@@ -21,7 +21,7 @@ const archiver = require('archiver');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-const upload = multer(); 
+const upload = multer();
 
 require('dotenv').config();
 process.env.GOOGLE_APPLICATION_CREDENTIALS.split(String.raw`\n`).join('\n');
@@ -29,7 +29,7 @@ console.log('GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CR
 
 // Konfiguracja klienta Google Cloud Storage
 const storage = new Storage();
-const bucketName = 'smartmeetingnotes'; 
+const bucketName = 'smartmeetingnotes';
 
 // Klient Google Speech-to-Text
 const client = new speech.SpeechClient();
@@ -92,7 +92,7 @@ async function extractFrames(videoPath, outputDir) {
                 console.log('Frames extracted successfully!');
                 // Usuwanie plików tymczasowych po zakończeniu operacji ffmpeg
                 try {
-                    fs.unlinkSync(videoPath); 
+                    fs.unlinkSync(videoPath);
                     console.log('Temporary files deleted successfully');
                 } catch (cleanupErr) {
                     console.error('Error during cleanup:', cleanupErr);
@@ -141,7 +141,7 @@ async function detectChart(imagePath) {
     const image = sharp(imagePath);
     const { data, info } = await image.raw().toBuffer({ resolveWithObject: true });
 
-    // Prosty algorytm wykrywania wykresów na podstawie analizy kolorów i kształtów
+    //Algorytm wykrywania wykresów na podstawie analizy kolorów i kształtów
     const width = info.width;
     const height = info.height;
     const threshold = 128;
@@ -174,7 +174,7 @@ function generatePDF(imagePaths, outputPath) {
     const doc = new PDFKitDocument();
     doc.pipe(fs.createWriteStream(outputPath));
 
-    let imagesPerPage = 2; 
+    let imagesPerPage = 2;
     let imagesOnCurrentPage = 0;
 
     imagePaths.forEach((imagePath, index) => {
@@ -183,10 +183,10 @@ function generatePDF(imagePaths, outputPath) {
         }
 
         const x = 50; // Margines poziomy
-        const y = imagesOnCurrentPage === 0 ? 100 : 400; // Margines pionowy
+        const y = imagesOnCurrentPage === 0 ? 100 : 400;
 
         doc.image(imagePath, x, y, {
-            fit: [500, 300], // Dopasowanie obrazu
+            fit: [500, 300],
             align: 'center',
             valign: 'center',
         });
@@ -194,7 +194,7 @@ function generatePDF(imagePaths, outputPath) {
         imagesOnCurrentPage++;
 
         if (imagesOnCurrentPage === imagesPerPage) {
-            imagesOnCurrentPage = 0; // Reset liczby obrazów na stronie
+            imagesOnCurrentPage = 0;
         }
     });
 
@@ -206,7 +206,7 @@ async function createZip(pdfPath, outputZipPath) {
     return new Promise((resolve, reject) => {
         const output = fs.createWriteStream(outputZipPath);
         const archive = archiver('zip', {
-            zlib: { level: 9 } // Maksymalna kompresja
+            zlib: { level: 9 }
         });
 
         output.on('close', () => {
@@ -279,7 +279,7 @@ async function performOCROnFrames(outputDir) {
 
 async function summarizeTranscription(transcription, ocrResults) {
     const client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = client.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
     let ocrSummary = 'Wyniki OCR:\n';
     ocrResults.forEach(result => {
         ocrSummary += `Plik: ${result.file}\nTekst: ${result.text}\n\n`;
@@ -296,8 +296,8 @@ const transporter = nodemailer.createTransport({
     port: 587, // Port SMTP (587 dla STARTTLS, 465 dla SSL)
     secure: false, //'true', jeśli port to 465
     auth: {
-        user: process.env.EMAIL, 
-        pass: process.env.EMAIL_PASSWORD, 
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
     },
 });
 
@@ -307,7 +307,7 @@ app.post('/submit-email', (req, res) => {
     const { email } = req.body;
     if (email && !userMails.includes(email)) {
         userMails.push(email);
-        console.log('Email added:', email); 
+        console.log('Email added:', email);
         res.json({ message: 'Email added successfully', emails: userMails });
     } else {
         res.status(400).json({ message: 'Nieprawidłowy lub powielony adres.' });
@@ -321,7 +321,7 @@ app.get('/emails', (req, res) => {
 app.delete('/delete-email', (req, res) => {
     const { email } = req.body;
     userMails = userMails.filter(e => e !== email);
-    console.log('Email deleted:', email); 
+    console.log('Email deleted:', email);
     res.json({ message: 'Email deleted successfully', emails: userMails });
 });
 
@@ -333,8 +333,8 @@ app.post('/log-event', (req, res) => {
 });
 
 app.post('/transcribe', upload.single('file'), async (req, res) => {
-    console.log('Received file:', req.file); 
-    console.log('File size:', req.file.size, 'bytes'); 
+    console.log('Received file:', req.file);
+    console.log('File size:', req.file.size, 'bytes');
 
     try {
         // Przesyłanie pliku bezpośrednio do GCS
@@ -348,6 +348,7 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
             encoding: 'WEBM_OPUS',
             sampleRateHertz: 48000,
             languageCode: 'pl-PL',
+            alternativeLanguageCodes: ['en-US'],
             enableWordTimeOffsets: true, // Włączanie offsetów czasowych
         };
 

@@ -6,9 +6,12 @@
 
     console.log("Content script injected successfully!");
 
-    var recorder = null;
+    let recorder = null;
     let audioContext;
     let destination;
+    let displayStream;
+    let micStream;
+
     function onAccessApproved(stream) {
         recorder = new MediaRecorder(stream, {
             mimeType: 'video/webm; codecs=vp8,opus'
@@ -18,11 +21,12 @@
         chrome.runtime.sendMessage({ action: "log", message: "Recording started" });
 
         recorder.onstop = function () {
-            stream.getTracks().forEach(function (track) {
+            stream.getTracks().forEach(track => {
                 if (track.readyState === "live") {
                     track.stop();
                 }
             });
+            displayStream?.getTracks().forEach(track => track.stop());
         };
 
         recorder.ondataavailable = function (event) {
@@ -32,7 +36,7 @@
 
             a.style.display = "none";
             a.href = url;
-            a.download = "screen-recording.webm"
+            a.download = "screen-recording.webm";
 
             document.body.appendChild(a);
             a.click();
@@ -42,12 +46,12 @@
             URL.revokeObjectURL(url);
 
             processAudio(recordedBlob);
-        }
+        };
     }
 
     async function processAudio(audioBlob) {
         console.log('Preparing to send file');
-        console.log('Blob size:', audioBlob.size, 'bytes'); // Debug: rozmiar pliku
+        console.log('Blob size:', audioBlob.size, 'bytes');
 
         const formData = new FormData();
         formData.append('file', audioBlob, 'audio.webm');
@@ -57,7 +61,6 @@
                 method: 'POST',
                 body: formData,
             });
-
 
             if (!response.ok) {
                 const error = await response.json();
@@ -102,31 +105,45 @@
                     height: 1080,
                 },
                 audio: true
-            }).then(async (displayStream) => {
+            }).then(async (stream) => {
+                displayStream = stream;
                 try {
                     audioContext = new AudioContext();
                     destination = audioContext.createMediaStreamDestination();
 
                     const deviceId = await getUserSelectedMicrophone();
-                    const micStream = await navigator.mediaDevices.getUserMedia({
+                    micStream = await navigator.mediaDevices.getUserMedia({
                         audio: {
-                            deviceId: { exact: deviceId }
+                            deviceId: { exact: deviceId },
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            sampleRate: 44100
                         }
                     });
 
-                    // --- Audio Mixing with Web Audio API ---
                     const displaySource = audioContext.createMediaStreamSource(displayStream);
                     const micSource = audioContext.createMediaStreamSource(micStream);
 
-                    // Connect sources directly to destination for now
-                    displaySource.connect(destination);
-                    micSource.connect(destination);
+                    // Create gain nodes to adjust volume
+                    const displayGain = audioContext.createGain();
+                    const micGain = audioContext.createGain();
+
+                    // Adjust gain levels
+                    displayGain.gain.value = 1.0;
+                    micGain.gain.value = 1.0; 
+
+                    // Connect sources to gain nodes
+                    displaySource.connect(displayGain);
+                    micSource.connect(micGain);
+
+                    // Connect gain nodes to destination
+                    displayGain.connect(destination);
+                    micGain.connect(destination);
 
                     const combinedStream = new MediaStream([
                         ...displayStream.getVideoTracks(),
                         ...destination.stream.getAudioTracks()
                     ]);
-                    // --- End of Audio Mixing ---
 
                     if (audioContext.state === 'suspended') {
                         audioContext.resume();
@@ -137,6 +154,8 @@
 
                 } catch (error) {
                     chrome.runtime.sendMessage({ action: "log", message: `Error: ${error}` });
+                    console.error("Microphone error:", error);
+                    onAccessApproved(displayStream); 
                 }
             }).catch((error) => {
                 chrome.runtime.sendMessage({ action: "log", message: `Error accessing display: ${error}` });
