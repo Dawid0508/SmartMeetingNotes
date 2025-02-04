@@ -21,14 +21,17 @@ Główne funkcjonalności:
 ### 1. Pobranie projektu
 Pobierz lub sklonuj repozytorium:
 
+```
 git clone https://github.com/Dawid0508/SmartMeetingNotes.git
 cd SmartMeetingNotes
+```
 
 ## 2. Instalacja zależności
 Zainstaluj zależności backendu
-
+```
 cd server
 npm install
+```
 
 ## 3. Konfiguracja środowiska
 Przed uruchomieniem serwera należy utworzyć dwa pliki:
@@ -50,13 +53,13 @@ Przed uruchomieniem serwera należy utworzyć dwa pliki:
 
 ## 3. Uruchomienie servera
 
-node server.js
+`node server.js`
 
 Serwer powinien uruchomić się na http://localhost:3000/
 
 ## 4. Instalacja rozszerzenia w Chrome
  
- - Otwórz chrome://extensions/.
+ - Otwórz `chrome://extensions/`.
  - Włącz Tryb deweloperski.
  - Kliknij Załaduj rozpakowane.
  - Wybierz katalog SmartMeetingNotes.
