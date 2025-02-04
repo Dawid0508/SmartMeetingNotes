@@ -11,7 +11,6 @@ const crypto = require('crypto'); // Importowanie biblioteki crypto
 const { imageHash } = require('image-hash');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const bodyParser = require('body-parser');
-const postmark = require("postmark");
 const nodemailer = require('nodemailer');
 const { env } = require('process');
 const sharp = require('sharp');
@@ -22,7 +21,7 @@ const archiver = require('archiver');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-const upload = multer(); // Multer bez opcji 'dest', więc plik nie jest zapisywany na dysku lokalnym
+const upload = multer(); 
 
 require('dotenv').config();
 process.env.GOOGLE_APPLICATION_CREDENTIALS.split(String.raw`\n`).join('\n');
@@ -30,14 +29,10 @@ console.log('GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CR
 
 // Konfiguracja klienta Google Cloud Storage
 const storage = new Storage();
-const bucketName = 'smartmeetingnotes'; // Zmień na swoją nazwę bucketu
+const bucketName = 'smartmeetingnotes'; 
 
 // Klient Google Speech-to-Text
 const client = new speech.SpeechClient();
-
-// Klient do wysylania maili Postmark
-var serverToken = process.env.postmark;
-var clientMail = new postmark.ServerClient(serverToken);
 
 
 async function uploadStreamToGCS(buffer, destination) {
@@ -97,7 +92,7 @@ async function extractFrames(videoPath, outputDir) {
                 console.log('Frames extracted successfully!');
                 // Usuwanie plików tymczasowych po zakończeniu operacji ffmpeg
                 try {
-                    fs.unlinkSync(videoPath); // Usuwanie pliku wideo
+                    fs.unlinkSync(videoPath); 
                     console.log('Temporary files deleted successfully');
                 } catch (cleanupErr) {
                     console.error('Error during cleanup:', cleanupErr);
@@ -131,8 +126,6 @@ function getImageHash(filePath) {
         });
     });
 }
-
-
 
 function hammingDistance(hash1, hash2) {
     let distance = 0;
@@ -170,7 +163,7 @@ async function detectChart(imagePath) {
     }
     // Jeśli liczba ciemnych pikseli przekracza pewien procent, uznajemy, że jest to wykres
     const darkPixelPercentage = (darkPixelCount / totalPixels) * 100;
-    if (darkPixelPercentage > 20) { // Możesz dostosować ten próg
+    if (darkPixelPercentage > 20) {
         chartDetected = true;
     }
 
@@ -181,17 +174,16 @@ function generatePDF(imagePaths, outputPath) {
     const doc = new PDFKitDocument();
     doc.pipe(fs.createWriteStream(outputPath));
 
-    let imagesPerPage = 2; // Liczba obrazów na stronę
+    let imagesPerPage = 2; 
     let imagesOnCurrentPage = 0;
 
     imagePaths.forEach((imagePath, index) => {
         if (imagesOnCurrentPage === 0 && index !== 0) {
-            // Dodaj nową stronę tylko po pierwszej stronie
             doc.addPage();
         }
 
         const x = 50; // Margines poziomy
-        const y = imagesOnCurrentPage === 0 ? 100 : 400; // Margines pionowy zależny od obrazu
+        const y = imagesOnCurrentPage === 0 ? 100 : 400; // Margines pionowy
 
         doc.image(imagePath, x, y, {
             fit: [500, 300], // Dopasowanie obrazu
@@ -229,7 +221,6 @@ async function createZip(pdfPath, outputZipPath) {
 
         archive.pipe(output);
 
-        // Dodaj PDF do archiwum
         archive.file(pdfPath, { name: 'charts.pdf' });
 
         archive.finalize();
@@ -303,10 +294,10 @@ async function summarizeTranscription(transcription, ocrResults) {
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com', // Adres serwera SMTP
     port: 587, // Port SMTP (587 dla STARTTLS, 465 dla SSL)
-    secure: false, // Używaj 'true', jeśli port to 465
+    secure: false, //'true', jeśli port to 465
     auth: {
-        user: process.env.EMAIL, // Twój adres e-mail
-        pass: process.env.EMAIL_PASSWORD, // Twoje hasło do skrzynki e-mail
+        user: process.env.EMAIL, 
+        pass: process.env.EMAIL_PASSWORD, 
     },
 });
 
@@ -316,7 +307,7 @@ app.post('/submit-email', (req, res) => {
     const { email } = req.body;
     if (email && !userMails.includes(email)) {
         userMails.push(email);
-        console.log('Email added:', email); // Log when email is added
+        console.log('Email added:', email); 
         res.json({ message: 'Email added successfully', emails: userMails });
     } else {
         res.status(400).json({ message: 'Nieprawidłowy lub powielony adres.' });
@@ -330,7 +321,7 @@ app.get('/emails', (req, res) => {
 app.delete('/delete-email', (req, res) => {
     const { email } = req.body;
     userMails = userMails.filter(e => e !== email);
-    console.log('Email deleted:', email); // Log when email is deleted
+    console.log('Email deleted:', email); 
     res.json({ message: 'Email deleted successfully', emails: userMails });
 });
 
@@ -342,8 +333,8 @@ app.post('/log-event', (req, res) => {
 });
 
 app.post('/transcribe', upload.single('file'), async (req, res) => {
-    console.log('Received file:', req.file); // Debug: informacje o pliku
-    console.log('File size:', req.file.size, 'bytes'); // Debug: rozmiar pliku
+    console.log('Received file:', req.file); 
+    console.log('File size:', req.file.size, 'bytes'); 
 
     try {
         // Przesyłanie pliku bezpośrednio do GCS
@@ -362,7 +353,6 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
 
         const request = { audio, config };
 
-        // Wykonanie długiej transkrypcji
         console.log('Starting longRunningRecognize...');
         const [operation] = await client.longRunningRecognize(request);
         const [response] = await operation.promise();
@@ -463,9 +453,6 @@ app.post('/transcribe', upload.single('file'), async (req, res) => {
                 console.log('Email sent:', info.response);
             }
         });
-
-        // Usunięcie oryginalnego pliku audio po zapisaniu transkrypcji
-        // fs.unlinkSync(filePath);
     } catch (err) {
         console.error('Error during transcription:', err);
         if (!res.headersSent) {

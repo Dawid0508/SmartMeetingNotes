@@ -14,6 +14,7 @@ Główne funkcjonalności:
 - **Google Chrome** (lub inna przeglądarka obsługująca WebExtensions)
 - **Node.js** (zalecana wersja: LTS)
 - **npm** lub **yarn** do zarządzania zależnościami
+- **ffmpeg** do przetwarzania wideo
 
 ## Instalacja i uruchomienie
 

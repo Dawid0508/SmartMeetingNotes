@@ -7,7 +7,6 @@ if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
     throw new Error('GOOGLE_APPLICATION_CREDENTIALS environment variable is not set');
 }
 
-// Read the credentials from the file specified by the environment variable
 const credentialsPath = path.resolve(__dirname, process.env.GOOGLE_APPLICATION_CREDENTIALS);
 const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf8'));
 
